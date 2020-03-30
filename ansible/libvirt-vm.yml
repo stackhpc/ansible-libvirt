@@ -6,7 +6,7 @@
     vm_host: "{{ groups['libvirt-vms'][0] }}"
     ssh_public_key_path: ~/.ssh/id_rsa.pub
     vm_user_data_path: "{{ image_cache_path }}/vm-user-data"
-  pre_tasks:
+  tasks:
     - name: Ensure the image cache directory exists
       file:
         path: "{{ image_cache_path }}"
@@ -31,31 +31,31 @@
           chmod 644 /etc/resolv.conf
         dest: "{{ vm_user_data_path }}"
 
-  roles:
-    - role: jriguera.configdrive
-      # For now assume the VM OS family is the same as the hypervisor's.
-      configdrive_os_family: "{{ ansible_os_family }}"
-      configdrive_uuid: "{{ vm_host | to_uuid }}"
-      configdrive_fqdn: "{{ vm_host }}"
-      configdrive_name: "{{ vm_host }}"
-      configdrive_ssh_public_key: "{{ lookup('file', ssh_public_key_path) }}"
-      configdrive_config_dir: "{{ image_cache_path }}"
-      configdrive_volume_path: "{{ image_cache_path }}"
-      configdrive_config_dir_delete: True
-      configdrive_resolv:
-        domain: "{{ hostvars[vm_host].resolv_domain | default }}"
-        search: "{{ hostvars[vm_host].resolv_search | default }}"
-        dns: "{{ hostvars[vm_host].resolv_nameservers | default([]) }}"
-      configdrive_network_device_list:
-        - device: eth0
-          address: "{{ hostvars[vm_host].vm_ip }}"
-          netmask: 255.255.255.0
-          gateway: 192.168.122.1
-          bootproto: static
-          mtu: 1500
-      configdrive_config_user_data_path: "{{ vm_user_data_path }}"
+    - import_role:
+        name: jriguera.configdrive
+      vars:
+        # For now assume the VM OS family is the same as the hypervisor's.
+        configdrive_os_family: "{{ ansible_os_family }}"
+        configdrive_uuid: "{{ vm_host | to_uuid }}"
+        configdrive_fqdn: "{{ vm_host }}"
+        configdrive_name: "{{ vm_host }}"
+        configdrive_ssh_public_key: "{{ lookup('file', ssh_public_key_path) }}"
+        configdrive_config_dir: "{{ image_cache_path }}"
+        configdrive_volume_path: "{{ image_cache_path }}"
+        configdrive_config_dir_delete: True
+        configdrive_resolv:
+          domain: "{{ hostvars[vm_host].resolv_domain | default }}"
+          search: "{{ hostvars[vm_host].resolv_search | default }}"
+          dns: "{{ hostvars[vm_host].resolv_nameservers | default([]) }}"
+        configdrive_network_device_list:
+          - device: eth0
+            address: "{{ hostvars[vm_host].vm_ip }}"
+            netmask: 255.255.255.0
+            gateway: 192.168.122.1
+            bootproto: static
+            mtu: 1500
+        configdrive_config_user_data_path: "{{ vm_user_data_path }}"
 
-  tasks:
     - name: Set a fact containing the configdrive image path
       set_fact:
         vm_configdrive_path: "{{ image_cache_path }}/{{ vm_host }}.iso"
@@ -74,12 +74,6 @@
         - "{{ vm_user_data_path }}"
         - "{{ image_cache_path }}/{{ vm_host | to_uuid }}.gz"
 
-- name: Ensure that the VM is provisioned
-  hosts: libvirt-hosts
-  vars:
-    image_cache_path: /tmp/libvirt-vm-cache
-    vm_host: "{{ groups['libvirt-vms'][0] }}"
-  pre_tasks:
     - name: Check the size of the configdrive image
       stat:
         path: "{{ vm_configdrive_path }}"
@@ -88,28 +82,28 @@
         mime: False
       register: stat_result
 
-  roles:
-    - role: stackhpc.libvirt-vm
-      vm_configdrive_volume:
-        name: "{{ vm_host }}-configdrive"
-        pool: "{{ hostvars[vm_host].vm_pool | default('default') }}"
-        # Round size up to next multiple of 4096.
-        capacity: "{{ (stat_result.stat.size + 4095) // 4096 * 4096 }}"
-        device: "cdrom"
-        format: "raw"
-        image: "{{ vm_configdrive_path }}"
-      libvirt_vm_image_cache_path: "{{ image_cache_path }}"
-      libvirt_vms:
-        - name: "{{ vm_host }}"
-          memory_mb: "{{ hostvars[vm_host].vm_memory_mb }}"
-          vcpus: "{{ hostvars[vm_host].vm_vcpus }}"
-          volumes: "{{ hostvars[vm_host].vm_volumes + [vm_configdrive_volume] }}"
-          interfaces:
-            - network: default
-          console_log_enabled: true
-      become: True
+    - import_role:
+        name: stackhpc.libvirt-vm
+      vars:
+        vm_configdrive_volume:
+          name: "{{ vm_host }}-configdrive"
+          pool: "{{ hostvars[vm_host].vm_pool | default('default') }}"
+          # Round size up to next multiple of 4096.
+          capacity: "{{ (stat_result.stat.size + 4095) // 4096 * 4096 }}"
+          device: "cdrom"
+          format: "raw"
+          image: "{{ vm_configdrive_path }}"
+        libvirt_vm_image_cache_path: "{{ image_cache_path }}"
+        libvirt_vms:
+          - name: "{{ vm_host }}"
+            memory_mb: "{{ hostvars[vm_host].vm_memory_mb }}"
+            vcpus: "{{ hostvars[vm_host].vm_vcpus }}"
+            volumes: "{{ hostvars[vm_host].vm_volumes + [vm_configdrive_volume] }}"
+            interfaces:
+              - network: default
+            console_log_enabled: true
+        become: True
 
-  tasks:
     - name: Wait for SSH access to the VM
       local_action:
         module: wait_for
