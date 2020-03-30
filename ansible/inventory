@@ -1,0 +1,5 @@
+[libvirt-hosts]
+localhost ansible_connection=local
+
+[libvirt-vms]
+vm1 vm_memory_mb=1024 vm_vcpus=1 vm_ip=192.168.122.2
