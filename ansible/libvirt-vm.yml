@@ -14,4 +14,3 @@
         loop_var: vm_host
       vars:
         vm_configdrive_path: "{{ image_cache_path }}/{{ vm_host }}.iso"
-        vm_user_data_path: "{{ image_cache_path }}/vm-user-data/{{ vm_host }}"
