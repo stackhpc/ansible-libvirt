@@ -4,4 +4,12 @@ vm_volumes:
     pool: default
     capacity: 20G
     format: qcow2
-    image: https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2
+    image: "{{ vm_image }}"
+
+vm_image: https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2
+
+resolv_domain:
+resolv_search:
+resolv_nameservers:
+  - 8.8.8.8
+  - 8.8.4.4
