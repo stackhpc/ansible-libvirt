@@ -28,3 +28,5 @@ vm_configdrive_network_device_list:
     gateway: "{{ vm_gateway }}"
     bootproto: static
     mtu: 1500
+
+vm_hypervisor: "{{ groups['libvirt-hosts'][0] }}"

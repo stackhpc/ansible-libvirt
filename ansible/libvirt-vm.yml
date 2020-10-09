@@ -12,5 +12,6 @@
       with_items: "{{ groups['libvirt-vms'] }}"
       loop_control:
         loop_var: vm_host
+      when: hostvars[vm_host]['vm_hypervisor'] == inventory_hostname
       vars:
         vm_configdrive_path: "{{ image_cache_path }}/{{ vm_host }}.iso"
