@@ -16,6 +16,10 @@ ansible-galaxy install -r requirements.yml -p ansible/roles
 deactivate
 ```
 
+## Configuration
+
+Modify the [inventory](ansible/inventory), and group variables files ([libvirt-hosts](ansible/group_vars/libvirt-hosts) & [libvirt-vms](ansible/group_vars/libvirt-vms)) to suit your needs.
+
 ## Usage
 
 ```
