@@ -13,3 +13,18 @@ resolv_search:
 resolv_nameservers:
   - 8.8.8.8
   - 8.8.4.4
+
+vm_interfaces:
+  - network: default
+
+# vm_ip should be defined in hostvars.
+vm_netmask: "255.255.255.0"
+vm_gateway: "192.168.122.1"
+
+vm_configdrive_network_device_list:
+  - device: eth0
+    address: "{{ vm_ip }}"
+    netmask: "{{ vm_netmask }}"
+    gateway: "{{ vm_gateway }}"
+    bootproto: static
+    mtu: 1500

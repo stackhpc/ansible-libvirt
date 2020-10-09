@@ -24,13 +24,7 @@
       domain: "{{ hostvars[vm_host].resolv_domain | default }}"
       search: "{{ hostvars[vm_host].resolv_search | default }}"
       dns: "{{ hostvars[vm_host].resolv_nameservers | default([]) }}"
-    configdrive_network_device_list:
-      - device: eth0
-        address: "{{ hostvars[vm_host].vm_ip }}"
-        netmask: 255.255.255.0
-        gateway: 192.168.122.1
-        bootproto: static
-        mtu: 1500
+    configdrive_network_device_list: "{{ hostvars[vm_host].vm_configdrive_network_device_list }}"
 
 - name: Ensure configdrive is decoded and decompressed
   shell: >
@@ -70,8 +64,7 @@
         memory_mb: "{{ hostvars[vm_host].vm_memory_mb }}"
         vcpus: "{{ hostvars[vm_host].vm_vcpus }}"
         volumes: "{{ hostvars[vm_host].vm_volumes + [vm_configdrive_volume] }}"
-        interfaces:
-          - network: default
+        interfaces: "{{ hostvars[vm_host].vm_interfaces }}"
         console_log_enabled: true
     become: True
 
