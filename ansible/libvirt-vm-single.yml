@@ -28,9 +28,9 @@
 
 - name: Ensure configdrive is decoded and decompressed
   shell: >
-      base64 -d {{ image_cache_path }}/{{ vm_host | to_uuid }}.gz
-      | gunzip
-      > {{ vm_configdrive_path }}
+    base64 -d {{ image_cache_path }}/{{ vm_host | to_uuid }}.gz
+    | gunzip
+    > {{ vm_configdrive_path }}
 
 - name: Ensure unnecessary files are removed
   file:
@@ -71,10 +71,9 @@
 - name: Wait for SSH access to the VM
   local_action:
     module: wait_for
-    host: "{{ hostvars[vm_host].vm_ip }}"
+    host: "{{ hostvars[vm_host].vm_configdrive_network_device_list[0].address }}"
     port: 22
     state: started
     # NOTE: Ensure we exceed the 5 minute DHCP timeout of the eth0
     # interface if necessary.
     timeout: 360
-
