@@ -7,6 +7,16 @@
     group: "{{ ansible_user_gid }}"
   become: True
 
+- name: If defined, create a user_data file
+  copy:
+    content: "{{ hostvars[vm_host].vm_user_data }}"
+    dest: "{{ image_cache_path ~ '/user_data' }}"
+    mode: "0600"
+    owner: "{{ ansible_user_uid }}"
+    group: "{{ ansible_user_gid }}"
+  when: hostvars[vm_host].vm_user_data is defined and hostvars[vm_host].vm_user_data
+  become: True
+
 - import_role:
     name: jriguera.configdrive
   vars:
@@ -17,6 +27,7 @@
     configdrive_name: "{{ vm_host }}"
     configdrive_ssh_public_key: "{{ lookup('file', ssh_public_key_path) }}"
     configdrive_config_dir: "{{ image_cache_path }}"
+    configdrive_config_user_data_path: "{{ (image_cache_path ~ '/user_data') if hostvars[vm_host].vm_user_data is defined | default(omit) }}"
     configdrive_instance_dir: "{{ configdrive_uuid }}"
     configdrive_volume_path: "{{ image_cache_path }}"
     configdrive_config_dir_delete: True
@@ -28,9 +39,9 @@
 
 - name: Ensure configdrive is decoded and decompressed
   shell: >
-      base64 -d {{ image_cache_path }}/{{ vm_host | to_uuid }}.gz
-      | gunzip
-      > {{ vm_configdrive_path }}
+    base64 -d {{ image_cache_path }}/{{ vm_host | to_uuid }}.gz
+    | gunzip
+    > {{ vm_configdrive_path }}
 
 - name: Ensure unnecessary files are removed
   file:
@@ -77,4 +88,3 @@
     # NOTE: Ensure we exceed the 5 minute DHCP timeout of the eth0
     # interface if necessary.
     timeout: 360
-

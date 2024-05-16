@@ -30,3 +30,10 @@ vm_configdrive_network_device_list:
     mtu: 1500
 
 vm_hypervisor: "{{ groups['libvirt-hosts'][0] }}"
+
+vm_user_data: |
+       #cloud-config
+       users:
+         - default
+         - name: stack
+           lock_passwd: true
