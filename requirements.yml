@@ -1,6 +1,6 @@
 ---
 - src: jriguera.configdrive
   # There are no versioned releases of this role.
-  version: 56daf0017783bd4fa5722da4ee91b66ddd4e6b6a
+  version: acd08fd126d0e442ab8b3bc518e37761390d8c2f
 - src: stackhpc.libvirt-host
 - src: stackhpc.libvirt-vm
