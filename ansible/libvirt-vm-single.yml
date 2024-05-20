@@ -82,7 +82,7 @@
 - name: Wait for SSH access to the VM
   local_action:
     module: wait_for
-    host: "{{ hostvars[vm_host].vm_ip }}"
+    host: "{{ hostvars[vm_host].vm_configdrive_network_device_list[0].address }}"
     port: 22
     state: started
     # NOTE: Ensure we exceed the 5 minute DHCP timeout of the eth0
